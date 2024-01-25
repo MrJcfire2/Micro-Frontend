@@ -1,7 +1,7 @@
 import {
   NotFoundRoute,
-  Route,
-  Router,
+  createRoute,
+  createRouter,
   redirect,
   rootRouteWithContext,
 } from "@tanstack/react-router";
@@ -9,7 +9,8 @@ import App from "./App";
 import Home from "./pages/Home";
 import { LoginCallback } from "@okta/okta-react";
 import LoginRedirect from "./pages/LoginRedirect";
-// import AutoUnblockerApp from "autoUnblocker/AutoUnblockerApp";
+import AutoUnblockerApp from "autoUnblocker/AutoUnblockerApp";
+// import LoginCallback from "./pages/LoginCallback";
 
 interface RouterContext {
   auth: {
@@ -21,10 +22,9 @@ const rootRoute = rootRouteWithContext<RouterContext>()({
   component: () => <App />,
 });
 
-const indexRoute = new Route({
-  path: "/",
+const protectedRoute = createRoute({
+  id: "index",
   getParentRoute: () => rootRoute,
-  component: Home,
   beforeLoad: ({ context }) => {
     console.log({ beforeLoadIsAuthenticated: context.auth.isAuthenticated });
     if (!context.auth.isAuthenticated) {
@@ -38,23 +38,35 @@ const indexRoute = new Route({
   },
 });
 
-const loginRedirectRoute = new Route({
-  path: "/login",
+const homeRoute = createRoute({
+  path: "/",
+  getParentRoute: () => protectedRoute,
+  component: Home,
+});
+
+const marketsRoute = createRoute({
+  path: "markets",
+  getParentRoute: () => protectedRoute,
+  component: () => <p>Markets</p>,
+});
+
+const loginRedirectRoute = createRoute({
+  path: "login",
   getParentRoute: () => rootRoute,
   component: LoginRedirect,
 });
 
-const loginCallback = new Route({
-  path: "/login/callback",
+const loginCallbackRoute = createRoute({
+  path: "login/callback",
   getParentRoute: () => rootRoute,
   component: LoginCallback,
 });
 
-// const autoUnblockerRoute = new Route({
-//   path: "/unblocker",
-//   getParentRoute: () => rootRoute,
-//   component: AutoUnblockerApp,
-// });
+const autoUnblockerRoute = createRoute({
+  path: "/unblocker",
+  getParentRoute: () => rootRoute,
+  component: AutoUnblockerApp,
+});
 
 const notFoundRoute = new NotFoundRoute({
   getParentRoute: () => rootRoute,
@@ -62,13 +74,13 @@ const notFoundRoute = new NotFoundRoute({
 });
 
 const routeTree = rootRoute.addChildren([
-  indexRoute,
-  // autoUnblockerRoute,
+  protectedRoute.addChildren([homeRoute, marketsRoute]),
+  autoUnblockerRoute,
   loginRedirectRoute,
-  loginCallback,
+  loginCallbackRoute,
 ]);
 
-export const router = new Router({
+export const router = createRouter({
   routeTree,
   notFoundRoute: notFoundRoute,
   context: {

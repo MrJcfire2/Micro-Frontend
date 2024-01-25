@@ -10,29 +10,20 @@ const oktaAuth = new OktaAuth({
   clientId: "0oa6uxuhjgXINkcUp5d7",
   redirectUri: `${window.location.origin}/login/callback`,
   scopes: ["openid", "profile", "email"],
-  pkce: true,
 });
 
-export default function Main() {
-  const restoreOriginalUri = async (
-    _oktaAuth: OktaAuth,
-    originalUri: string
-  ) => {
-    console.log({ originalUri });
-    window.location.replace(
-      toRelativeUrl(originalUri || "/", window.location.origin)
-    );
-  };
+const restoreOriginalUri = async (_oktaAuth: OktaAuth, originalUri: string) => {
+  console.log({ originalUri });
+  console.log("test");
+  window.location.replace(
+    toRelativeUrl(originalUri || "/", window.location.origin)
+  );
+};
 
-  return (
+ReactDOM.createRoot(document.getElementById("root") as HTMLElement).render(
+  <React.StrictMode>
     <Security oktaAuth={oktaAuth} restoreOriginalUri={restoreOriginalUri}>
       <AppContainer />
     </Security>
-  );
-}
-
-ReactDOM.createRoot(document.getElementById("root")!).render(
-  <React.StrictMode>
-    <Main />
   </React.StrictMode>
 );
